@@ -115,6 +115,10 @@ components:
     Pet:
       type: object
       properties:
+        id:
+          type: integer
+          description: ID of the pet
+          x-displayName: ID
         name:
           type: string
           description: Name of the pet
@@ -123,8 +127,3 @@ components:
           type: string
           description: Species of the pet
           x-displayName: Species
-      required:
-        - name
-        - species
-
-  
