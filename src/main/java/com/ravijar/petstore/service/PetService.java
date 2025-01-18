@@ -28,4 +28,12 @@ public class PetService {
     public void deletePet(Long id) {
         petRepository.deleteById(id);
     }
+
+    public Optional<Pet> updatePet(Long id, Pet updatedPet) {
+        return petRepository.findById(id).map(existingPet -> {
+            existingPet.setName(updatedPet.getName());
+            existingPet.setSpecies(updatedPet.getSpecies());
+            return petRepository.save(existingPet);
+        });
+    }
 }

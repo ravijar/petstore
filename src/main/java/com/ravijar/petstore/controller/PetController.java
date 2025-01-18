@@ -33,6 +33,12 @@ public class PetController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedPet);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Pet> updatePet(@PathVariable Long id, @RequestBody Pet updatedPet) {
+        Optional<Pet> updated = petService.updatePet(id, updatedPet);
+        return updated.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePet(@PathVariable Long id) {
         petService.deletePet(id);
