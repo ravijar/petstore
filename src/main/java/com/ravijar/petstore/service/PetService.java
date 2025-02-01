@@ -33,6 +33,8 @@ public class PetService {
         return petRepository.findById(id).map(existingPet -> {
             existingPet.setName(updatedPet.getName());
             existingPet.setSpecies(updatedPet.getSpecies());
+            existingPet.setDescription(updatedPet.getDescription());
+            existingPet.setImageURL(updatedPet.getImageURL());
             return petRepository.save(existingPet);
         });
     }
