@@ -15,5 +15,7 @@ public class Pet {
     private Long id;
     private String name;
     private String species;
+    private String description;
+    private String imageURL;
 }
 
