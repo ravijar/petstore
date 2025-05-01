@@ -1,21 +1,17 @@
 package com.ravijar.petstore.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.google.cloud.firestore.annotation.DocumentId;
+import com.google.cloud.spring.data.firestore.Document;
 import lombok.Data;
 
-
-@Entity
 @Data
+@Document(collectionName = "pets")
 public class Pet {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @DocumentId
+    private String id;
+
     private String name;
     private String species;
     private String description;
     private String imageURL;
 }
-

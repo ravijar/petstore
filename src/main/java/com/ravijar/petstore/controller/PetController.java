@@ -6,9 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/pets")
@@ -17,31 +16,35 @@ public class PetController {
     private PetService petService;
 
     @GetMapping
-    public List<Pet> getAllPets() {
+    public Flux<Pet> getAllPets() {
         return petService.getAllPets();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Pet> getPetById(@PathVariable Long id) {
-        Optional<Pet> pet = petService.getPetById(id);
-        return pet.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public Mono<ResponseEntity<Pet>> getPetById(@PathVariable String id) {
+        return petService.getPetById(id)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<Pet> createPet(@RequestBody Pet pet) {
-        Pet savedPet = petService.savePet(pet);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedPet);
+    public Mono<ResponseEntity<Pet>> createPet(@RequestBody Pet pet) {
+        return petService.savePet(pet)
+                .map(savedPet -> ResponseEntity.status(HttpStatus.CREATED).body(savedPet));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Pet> updatePet(@PathVariable Long id, @RequestBody Pet updatedPet) {
-        Optional<Pet> updated = petService.updatePet(id, updatedPet);
-        return updated.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public Mono<ResponseEntity<Pet>> updatePet(@PathVariable String id, @RequestBody Pet updatedPet) {
+        return petService.updatePet(id, updatedPet)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePet(@PathVariable Long id) {
-        petService.deletePet(id);
-        return ResponseEntity.noContent().build();
+    public Mono<ResponseEntity<Void>> deletePet(@PathVariable String id) {
+        return petService.getPetById(id)
+                .flatMap(existingPet ->
+                        petService.deletePet(id).thenReturn(ResponseEntity.noContent().<Void>build()))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 }

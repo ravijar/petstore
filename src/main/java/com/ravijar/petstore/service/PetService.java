@@ -4,38 +4,38 @@ import com.ravijar.petstore.model.Pet;
 import com.ravijar.petstore.repository.PetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 public class PetService {
     @Autowired
     private PetRepository petRepository;
 
-    public List<Pet> getAllPets() {
+    public Flux<Pet> getAllPets() {
         return petRepository.findAll();
     }
 
-    public Optional<Pet> getPetById(Long id) {
+    public Mono<Pet> getPetById(String id) {
         return petRepository.findById(id);
     }
 
-    public Pet savePet(Pet pet) {
+    public Mono<Pet> savePet(Pet pet) {
         return petRepository.save(pet);
     }
 
-    public void deletePet(Long id) {
-        petRepository.deleteById(id);
+    public Mono<Void> deletePet(String id) {
+        return petRepository.deleteById(id);
     }
 
-    public Optional<Pet> updatePet(Long id, Pet updatedPet) {
-        return petRepository.findById(id).map(existingPet -> {
-            existingPet.setName(updatedPet.getName());
-            existingPet.setSpecies(updatedPet.getSpecies());
-            existingPet.setDescription(updatedPet.getDescription());
-            existingPet.setImageURL(updatedPet.getImageURL());
-            return petRepository.save(existingPet);
-        });
+    public Mono<Pet> updatePet(String id, Pet updatedPet) {
+        return petRepository.findById(id)
+                .flatMap(existingPet -> {
+                    existingPet.setName(updatedPet.getName());
+                    existingPet.setSpecies(updatedPet.getSpecies());
+                    existingPet.setDescription(updatedPet.getDescription());
+                    existingPet.setImageURL(updatedPet.getImageURL());
+                    return petRepository.save(existingPet);
+                });
     }
 }

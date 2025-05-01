@@ -1,7 +1,9 @@
 package com.ravijar.petstore.repository;
 
 import com.ravijar.petstore.model.Pet;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.google.cloud.spring.data.firestore.FirestoreReactiveRepository;
+import org.springframework.stereotype.Repository;
 
-public interface PetRepository extends JpaRepository<Pet, Long> {
+@Repository
+public interface PetRepository extends FirestoreReactiveRepository<Pet> {
 }
