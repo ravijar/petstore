@@ -36,7 +36,7 @@ public class AuthService {
                         String name = node.get("name").asText();
 
                         User user = new User();
-                        user.setUserId(userId);
+                        user.setId(userId);
                         user.setEmail(email);
                         user.setName(name);
                         user.setRole("user");

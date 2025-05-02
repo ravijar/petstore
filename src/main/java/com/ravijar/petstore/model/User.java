@@ -8,7 +8,7 @@ import lombok.Data;
 @Document(collectionName = "users")
 public class User {
     @DocumentId
-    private String userId;
+    private String id;
     private String email;
     private String name;
     private String role;
