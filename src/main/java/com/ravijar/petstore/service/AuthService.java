@@ -21,6 +21,29 @@ public class AuthService {
     private final WebClient webClient = WebClient.create();
 
     public Mono<User> authenticateAndSaveIfNeeded(String accessToken) {
+        return extractUserInfo(accessToken)
+                .flatMap(node -> {
+                    String userId = node.get("sub").asText();
+                    String email = node.get("email").asText();
+                    String name = node.get("name").asText();
+
+                    User user = new User();
+                    user.setId(userId);
+                    user.setEmail(email);
+                    user.setName(name);
+                    user.setRole("user");
+
+                    return userRepository.findById(userId)
+                            .switchIfEmpty(userRepository.save(user));
+                });
+    }
+
+    public Mono<String> extractUserId(String accessToken) {
+        return extractUserInfo(accessToken)
+                .map(node -> node.get("sub").asText());
+    }
+
+    private Mono<JsonNode> extractUserInfo(String accessToken) {
         return webClient.get()
                 .uri(USERINFO_ENDPOINT)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
@@ -29,21 +52,7 @@ public class AuthService {
                 .flatMap(json -> {
                     try {
                         ObjectMapper mapper = new ObjectMapper();
-                        JsonNode node = mapper.readTree(json);
-
-                        String userId = node.get("sub").asText();
-                        String email = node.get("email").asText();
-                        String name = node.get("name").asText();
-
-                        User user = new User();
-                        user.setId(userId);
-                        user.setEmail(email);
-                        user.setName(name);
-                        user.setRole("user");
-
-                        return userRepository.findById(userId)
-                                .switchIfEmpty(userRepository.save(user));
-
+                        return Mono.just(mapper.readTree(json));
                     } catch (Exception e) {
                         return Mono.error(new RuntimeException("Failed to parse user info", e));
                     }

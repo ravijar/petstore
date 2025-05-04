@@ -3,6 +3,7 @@ info:
   title: Pet Store API
   description: API for managing pets in a pet store
   version: 1.0.0
+
 servers:
   - url: http://localhost:8080
     description: Local development server
@@ -12,68 +13,98 @@ paths:
     get:
       summary: Get all pets
       operationId: getAllPets
+      security: []
       responses:
-        '200':
+        "200":
           description: A list of pets
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Pet'
+                  $ref: "#/components/schemas/Pet"
+        "400":
+          description: Bad request - invalid query or format
+        "401":
+          description: Unauthorized - authentication required
+        "403":
+          description: Forbidden - insufficient permissions
+        "500":
+          description: Internal server error
 
     post:
       summary: Create a new pet
       operationId: createPet
+      security:
+        - googleOAuth: [admin]
       requestBody:
         description: Pet object that needs to be added to the store
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Pet'
+              $ref: "#/components/schemas/Pet"
       responses:
-        '201':
+        "201":
           description: Pet created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Pet'
+                $ref: "#/components/schemas/Pet"
+        "400":
+          description: Bad request - invalid data format or missing fields
+        "401":
+          description: Unauthorized - authentication required
+        "403":
+          description: Forbidden - not allowed to create resource
+        "409":
+          description: Conflict - duplicate entry or ID already exists
+        "500":
+          description: Internal server error
 
   /pets/{id}:
     get:
       summary: Get a pet by ID
       operationId: getPetById
+      security: []
       parameters:
         - name: id
           in: path
           required: true
           description: ID of the pet to return
           schema:
-            type: integer
-            format: int64
+            type: string
           x-displayName: ID
       responses:
-        '200':
+        "200":
           description: Pet found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Pet'
-        '404':
+                $ref: "#/components/schemas/Pet"
+        "400":
+          description: Bad request - invalid ID format
+        "401":
+          description: Unauthorized - authentication required
+        "403":
+          description: Forbidden - access denied
+        "404":
           description: Pet not found
+        "500":
+          description: Internal server error
 
     put:
       summary: Update a pet by ID
       operationId: updatePet
+      security:
+        - googleOAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           description: ID of the pet to update
           schema:
-            type: integer
-            format: int64
+            type: string
           x-displayName: ID
       requestBody:
         description: Updated pet object
@@ -81,34 +112,253 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Pet'
+              $ref: "#/components/schemas/Pet"
       responses:
-        '200':
+        "200":
           description: Pet updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Pet'
-        '404':
+                $ref: "#/components/schemas/Pet"
+        "400":
+          description: Bad request - invalid ID or body
+        "401":
+          description: Unauthorized - authentication required
+        "403":
+          description: Forbidden - not allowed to update
+        "404":
           description: Pet not found
+        "500":
+          description: Internal server error
 
     delete:
       summary: Delete a pet by ID
       operationId: deletePet
+      security:
+        - googleOAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           description: ID of the pet to delete
           schema:
-            type: integer
-            format: int64
+            type: string
+          x-displayName: ID
+      responses:
+        "204":
+          description: Pet deleted successfully - no content
+        "400":
+          description: Bad request - invalid ID
+        "401":
+          description: Unauthorized - authentication required
+        "403":
+          description: Forbidden - not allowed to delete
+        "404":
+          description: Pet not found
+        "500":
+          description: Internal server error
+
+  /auth/login:
+    post:
+      summary: Authenticate and register user if not present
+      operationId: login
+      security: [ ]
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Bearer token obtained from Google OAuth (e.g., "Bearer eyJhbGci...")
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Authenticated user returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid or missing token
+        "500":
+          description: Internal server error
+
+  /users:
+    get:
+      summary: Get all users
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+    post:
+      summary: Create a new user
+      operationId: createUser
+      requestBody:
+        description: User object that needs to be added
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/{id}:
+    get:
+      summary: Get a user by ID
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the user to return
+          schema:
+            type: string
+          x-displayName: ID
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+    put:
+      summary: Update a user by ID
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the user to update
+          schema:
+            type: string
+          x-displayName: ID
+      requestBody:
+        description: Updated user object
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+    delete:
+      summary: Delete a user by ID
+      operationId: deleteUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the user to delete
+          schema:
+            type: string
           x-displayName: ID
       responses:
         '204':
-          description: Pet deleted successfully
+          description: User deleted successfully
         '404':
-          description: Pet not found
+          description: User not found
+
+  /cart:
+    get:
+      summary: Get items in the current user's cart
+      operationId: getCart
+      security:
+        - googleOAuth: [ user ]
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Bearer token obtained from Google OAuth (e.g., "Bearer eyJhbGci...")
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of items in the cart
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CartItemView'
+
+    post:
+      summary: Add a pet to the current user's cart
+      operationId: addToCart
+      security:
+        - googleOAuth: [ user ]
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Bearer token obtained from Google OAuth (e.g., "Bearer eyJhbGci...")
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItemPost'
+      responses:
+        '200':
+          description: Pet added to cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+
+  /orders:
+    get:
+      summary: Get all orders for the current user
+      operationId: getOrders
+      security:
+        - googleOAuth: [ user ]
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+
+  /orders/place:
+    post:
+      summary: Place a new order using current cart
+      operationId: placeOrder
+      security:
+        - googleOAuth: [ user ]
+      responses:
+        '201':
+          description: Order placed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
 
 components:
   schemas:
@@ -116,7 +366,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
           description: ID of the pet
           x-displayName: ID
         name:
@@ -135,3 +385,98 @@ components:
           type: string
           description: Image of the pet
           x-displayName: Image URL
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          x-displayName: ID
+        email:
+          type: string
+          x-displayName: Email
+        name:
+          type: string
+          x-displayName: Name
+        role:
+          type: string
+          x-displayName: Role
+
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the cart item
+          x-displayName: ID
+        userId:
+          type: string
+          description: ID of the user who owns this cart
+          x-displayName: User ID
+        petId:
+          type: string
+          description: ID of the pet added to the cart
+          x-displayName: Pet ID
+
+    CartItemPost:
+      type: object
+      properties:
+        petId:
+          type: string
+          description: ID of the pet added to the cart
+          x-displayName: Pet ID
+
+    CartItemView:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Cart item ID
+          x-displayName: ID
+        petName:
+          type: string
+          description: Name of the pet in the cart
+          x-displayName: Name
+        quantity:
+          type: integer
+          description: Number of times this pet is in the user's cart
+          x-displayName: Quantity
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the order
+          x-displayName: ID
+        userId:
+          type: string
+          description: ID of the user who placed the order
+          x-displayName: User ID
+        petIds:
+          type: array
+          items:
+            type: string
+          description: List of pet IDs in the order
+          x-displayName: Pet Ids
+        orderTime:
+          type: string
+          format: date-time
+          description: Time the order was placed
+          x-displayName: Order Time
+        status:
+          type: string
+          description: Status of the order (e.g., PLACED)
+          x-displayName: Order Status
+
+  securitySchemes:
+    googleOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://accounts.google.com/o/oauth2/auth
+          tokenUrl: https://oauth2.googleapis.com/token
+          scopes:
+            guest: "Access as a guest (no authentication required)"
+            user: "Registered user access"
+            admin: "Administrator access"
