@@ -54,5 +54,10 @@ public class CartService {
                 .flatMap(cartItem -> cartItemRepository.deleteById(cartItem.getId()))
                 .then();
     }
+
+    public Mono<Void> removeFromCart(String cartItemId) {
+        return cartItemRepository.deleteById(cartItemId);
+    }
+
 }
 
