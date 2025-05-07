@@ -13,7 +13,7 @@ public class Order {
     @DocumentId
     private String id;
     private String userId;
-    private List<String> petIds;
+    private List<String> itemIds;
     private Timestamp orderTime;
     private String status;
 }

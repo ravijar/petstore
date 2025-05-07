@@ -3,7 +3,7 @@ package com.ravijar.petstore.service;
 import com.ravijar.petstore.model.CartItem;
 import com.ravijar.petstore.model.CartItemView;
 import com.ravijar.petstore.repository.CartItemRepository;
-import com.ravijar.petstore.repository.PetRepository;
+import com.ravijar.petstore.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -16,7 +16,7 @@ public class CartService {
     private CartItemRepository cartItemRepository;
 
     @Autowired
-    private PetRepository petRepository;
+    private ItemRepository itemRepository;
 
     public Flux<CartItem> getCartForUser(String userId) {
         return cartItemRepository.findByUserId(userId);
@@ -24,18 +24,18 @@ public class CartService {
 
     public Flux<CartItemView> getCartViewForUser(String userId) {
         return cartItemRepository.findByUserId(userId)
-                .collectMultimap(CartItem::getPetId)
+                .collectMultimap(CartItem::getItemId)
                 .flatMapMany(grouped -> Flux.fromIterable(grouped.entrySet()))
                 .flatMap(entry -> {
-                    String petId = entry.getKey();
+                    String itemId = entry.getKey();
                     int quantity = entry.getValue().size();
                     String anyCartItemId = entry.getValue().iterator().next().getId();
 
-                    return petRepository.findById(petId)
-                            .map(pet -> {
+                    return itemRepository.findById(itemId)
+                            .map(item -> {
                                 CartItemView view = new CartItemView();
                                 view.setId(anyCartItemId);
-                                view.setPetName(pet.getName());
+                                view.setItemName(item.getName());
                                 view.setQuantity(quantity);
                                 return view;
                             });

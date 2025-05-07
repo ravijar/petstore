@@ -4,9 +4,9 @@ import com.google.cloud.Timestamp;
 import com.ravijar.petstore.model.CartItem;
 import com.ravijar.petstore.model.OrderView;
 import com.ravijar.petstore.model.Order;
-import com.ravijar.petstore.model.Pet;
+import com.ravijar.petstore.model.Item;
 import com.ravijar.petstore.repository.OrderRepository;
-import com.ravijar.petstore.repository.PetRepository;
+import com.ravijar.petstore.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -26,7 +26,7 @@ public class OrderService {
     private CartService cartService;
 
     @Autowired
-    private PetRepository petRepository;
+    private ItemRepository itemRepository;
 
     public Mono<Order> placeOrder(String userId) {
         return cartService.getCartForUser(userId).collectList()
@@ -35,7 +35,7 @@ public class OrderService {
 
                     Order order = new Order();
                     order.setUserId(userId);
-                    order.setPetIds(cartItems.stream().map(CartItem::getPetId).toList());
+                    order.setItemIds(cartItems.stream().map(CartItem::getItemId).toList());
                     order.setOrderTime(Timestamp.now());
                     order.setStatus("PLACED");
 
@@ -49,10 +49,10 @@ public class OrderService {
     }
 
     public Mono<OrderView> toOrderView(Order order) {
-        return Flux.fromIterable(order.getPetIds())
-                .flatMap(petId -> petRepository.findById(petId))
-                .collect(Collectors.groupingBy(Pet::getName, Collectors.counting()))
-                .map(petCountMap -> {
+        return Flux.fromIterable(order.getItemIds())
+                .flatMap(itemId -> itemRepository.findById(itemId))
+                .collect(Collectors.groupingBy(Item::getName, Collectors.counting()))
+                .map(itemCountMap -> {
                     OrderView view = new OrderView();
                     view.setId(order.getId());
                     view.setStatus(order.getStatus());
@@ -62,8 +62,8 @@ public class OrderService {
                     String formattedTime = formatter.format(order.getOrderTime().toSqlTimestamp().toInstant());
                     view.setOrderTime(formattedTime);
 
-                    view.setPetSummary(
-                            petCountMap.entrySet().stream()
+                    view.setItemSummary(
+                            itemCountMap.entrySet().stream()
                                     .map(e -> e.getKey() + " x " + e.getValue())
                                     .toList()
                     );

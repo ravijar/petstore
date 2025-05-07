@@ -10,5 +10,5 @@ public class CartItem {
     @DocumentId
     private String id;
     private String userId;
-    private String petId;
+    private String itemId;
 }

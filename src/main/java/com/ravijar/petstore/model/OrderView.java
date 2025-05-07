@@ -8,7 +8,7 @@ import java.util.List;
 public class OrderView {
     private String id;
     private String orderTime;
-    private List<String> petSummary;
+    private List<String> itemSummary;
     private String status;
 }
 

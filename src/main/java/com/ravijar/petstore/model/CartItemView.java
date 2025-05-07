@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class CartItemView {
     private String id;
-    private String petName;
+    private String itemName;
     private int quantity;
 }

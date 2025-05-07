@@ -5,8 +5,8 @@ import com.google.cloud.spring.data.firestore.Document;
 import lombok.Data;
 
 @Data
-@Document(collectionName = "pets")
-public class Pet {
+@Document(collectionName = "items")
+public class Item {
     @DocumentId
     private String id;
 
