@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,17 +52,28 @@ public class OrderService {
     public Mono<OrderView> toOrderView(Order order) {
         return Flux.fromIterable(order.getItemIds())
                 .flatMap(itemId -> itemRepository.findById(itemId))
-                .collect(Collectors.groupingBy(Item::getName, Collectors.counting()))
-                .map(itemCountMap -> {
-                    OrderView view = new OrderView();
-                    view.setId(order.getId());
-                    view.setStatus(order.getStatus());
+                .collectList()
+                .map(items -> {
+                    // Count items
+                    Map<String, Long> itemCountMap = items.stream()
+                            .collect(Collectors.groupingBy(Item::getName, Collectors.counting()));
 
+                    // Calculate total
+                    double total = items.stream()
+                            .mapToDouble(Item::getPrice)
+                            .sum();
+
+                    // Format order time
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm:ss a")
                             .withZone(ZoneId.systemDefault());
                     String formattedTime = formatter.format(order.getOrderTime().toSqlTimestamp().toInstant());
-                    view.setOrderTime(formattedTime);
 
+                    // Build OrderView
+                    OrderView view = new OrderView();
+                    view.setId(order.getId());
+                    view.setStatus(order.getStatus());
+                    view.setOrderTime(formattedTime);
+                    view.setTotal(total);
                     view.setItemSummary(
                             itemCountMap.entrySet().stream()
                                     .map(e -> e.getKey() + " x " + e.getValue())

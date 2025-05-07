@@ -32,9 +32,11 @@ public class ItemService {
         return itemRepository.findById(id)
                 .flatMap(existingItem -> {
                     existingItem.setName(updatedItem.getName());
-                    existingItem.setSpecies(updatedItem.getSpecies());
+                    existingItem.setCategory(updatedItem.getCategory());
                     existingItem.setDescription(updatedItem.getDescription());
                     existingItem.setImageURL(updatedItem.getImageURL());
+                    existingItem.setPrice(updatedItem.getPrice());
+                    existingItem.setStock(updatedItem.getStock());
                     return itemRepository.save(existingItem);
                 });
     }

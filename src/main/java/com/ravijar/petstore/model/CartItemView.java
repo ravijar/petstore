@@ -7,4 +7,5 @@ public class CartItemView {
     private String id;
     private String itemName;
     private int quantity;
+    private double total;
 }

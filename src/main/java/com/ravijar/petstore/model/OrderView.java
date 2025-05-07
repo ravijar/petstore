@@ -10,5 +10,6 @@ public class OrderView {
     private String orderTime;
     private List<String> itemSummary;
     private String status;
+    private double total;
 }
 

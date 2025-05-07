@@ -9,9 +9,10 @@ import lombok.Data;
 public class Item {
     @DocumentId
     private String id;
-
     private String name;
-    private String species;
     private String description;
+    private String category;
     private String imageURL;
+    private double price;
+    private int stock;
 }

@@ -37,6 +37,7 @@ public class CartService {
                                 view.setId(anyCartItemId);
                                 view.setItemName(item.getName());
                                 view.setQuantity(quantity);
+                                view.setTotal(quantity * item.getPrice());
                                 return view;
                             });
                 });
