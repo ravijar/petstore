@@ -30,20 +30,55 @@ public class OrderService {
     private ItemRepository itemRepository;
 
     public Mono<Order> placeOrder(String userId) {
-        return cartService.getCartForUser(userId).collectList()
+        return cartService.getCartForUser(userId)
+                .collectList()
                 .flatMap(cartItems -> {
-                    if (cartItems.isEmpty()) return Mono.error(new RuntimeException("Cart is empty"));
+                    if (cartItems.isEmpty()) {
+                        return Mono.error(new RuntimeException("Cart is empty"));
+                    }
 
-                    Order order = new Order();
-                    order.setUserId(userId);
-                    order.setItemIds(cartItems.stream().map(CartItem::getItemId).toList());
-                    order.setOrderTime(Timestamp.now());
-                    order.setStatus("PLACED");
+                    // Group and count quantities per item
+                    Map<String, Long> itemIdToQuantity = cartItems.stream()
+                            .collect(Collectors.groupingBy(CartItem::getItemId, Collectors.counting()));
 
-                    return orderRepository.save(order)
-                            .flatMap(savedOrder -> cartService.clearCart(userId).thenReturn(savedOrder));
+                    // Step 1: Verify all items have enough stock
+                    return Flux.fromIterable(itemIdToQuantity.entrySet())
+                            .flatMap(entry ->
+                                    itemRepository.findById(entry.getKey())
+                                            .switchIfEmpty(Mono.error(new RuntimeException("Item not found: " + entry.getKey())))
+                                            .flatMap(item -> {
+                                                long requestedQty = entry.getValue();
+                                                if (item.getStock() < requestedQty) {
+                                                    return Mono.error(new RuntimeException("Insufficient stock for item: " + item.getName()));
+                                                }
+                                                return Mono.just(item);
+                                            })
+                            )
+                            .collectList()
+                            .flatMap(itemsToUpdate -> {
+                                // Step 2: Decrement stock and save
+                                return Flux.fromIterable(itemsToUpdate)
+                                        .flatMap(item -> {
+                                            long qty = itemIdToQuantity.get(item.getId());
+                                            item.setStock(item.getStock() - (int) qty);
+                                            return itemRepository.save(item);
+                                        })
+                                        .then(
+                                                // Step 3: Save the order
+                                                Mono.defer(() -> {
+                                                    Order order = new Order();
+                                                    order.setUserId(userId);
+                                                    order.setItemIds(cartItems.stream().map(CartItem::getItemId).toList());
+                                                    order.setOrderTime(Timestamp.now());
+                                                    order.setStatus("PLACED");
+                                                    return orderRepository.save(order)
+                                                            .flatMap(savedOrder -> cartService.clearCart(userId).thenReturn(savedOrder));
+                                                })
+                                        );
+                            });
                 });
     }
+
 
     public Flux<Order> getOrdersByUserId(String userId) {
         return orderRepository.findByUserId(userId);
