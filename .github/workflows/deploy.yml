@@ -18,30 +18,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      # Step 3: Install Railway CLI
-      - name: Install Railway CLI
-        run: |
-          curl -sSL https://railway.app/install.sh | bash
-          # Add Railway CLI to the PATH for subsequent steps
-          echo "$HOME/.railway/bin" >> $GITHUB_PATH
-
-      # Step 4: Set up Google Cloud service account credentials
+      # Step 3: Set up Google Cloud service account credentials
       - name: Set up Google Cloud credentials
         run: |
           echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > service-account-file.json
-          # Optional: List the file to confirm it's created
-          ls -l service-account-file.json
+          mv service-account-file.json /app/service-account-file.json
 
-      # Step 5: Build the Docker image
+      # Step 4: Build the Docker image
       - name: Build Docker image
         run: |
-          docker build --build-arg GOOGLE_APPLICATION_CREDENTIALS=service-account-file.json -t ravijar/petstore .
+          docker build --build-arg GOOGLE_APPLICATION_CREDENTIALS=/app/service-account-file.json -t ravijar/petstore .
 
-      # Step 6: Set Railway API Key and Deploy
-      - name: Deploy to Railway
+      # Step 5: Railway login (browserless) and deploy
+      - name: Railway login and deploy
         run: |
-          # Set the Railway API Key in the environment
-          export RAILWAY_API_KEY=${{ secrets.RAILWAY_API_KEY }}
-          
-          # Deploy using the Railway CLI
-          railway up --detach  # Deploys the project without waiting for logs
+          railway login --browserless  # Browserless login for CI/CD
+          railway up --detach  # Deploy the project without waiting for logs
