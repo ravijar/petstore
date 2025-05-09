@@ -1,4 +1,4 @@
-name: Deploy to Railway
+name: CI/CD Pipeline for Railway
 
 on:
   push:
@@ -18,30 +18,25 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      # Step 3: Install Railway CLI
-      - name: Install Railway CLI
-        run: |
-          curl -sSL https://railway.app/install.sh | bash
-          # Add Railway CLI to the PATH for subsequent steps
-          echo "$HOME/.railway/bin" >> $GITHUB_PATH
-
-      # Step 4: Set up Google Cloud service account credentials
+      # Step 3: Set up Google Cloud service account credentials
       - name: Set up Google Cloud credentials
         run: |
           echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > service-account-file.json
-          # Optional: List the file to confirm it's created
-          ls -l service-account-file.json
+          # No need to move the file to a specific directory; it will be used directly in the Docker build process
 
-      # Step 5: Build the Docker image
+      # Step 4: Build the Docker image
       - name: Build Docker image
         run: |
           docker build --build-arg GOOGLE_APPLICATION_CREDENTIALS=service-account-file.json -t ravijar/petstore .
 
-      # Step 6: Set Railway API Key and Deploy
-      - name: Deploy to Railway
+      # Step 5: Push Docker image to a registry (Optional, for example using GitHub Container Registry)
+      - name: Push Docker image to GitHub Container Registry
         run: |
-          # Set the Railway API Key in the environment
-          export RAILWAY_API_KEY=${{ secrets.RAILWAY_API_KEY }}
-          railway login --browserless
-          # Deploy using the Railway CLI
-          railway up --detach  # Deploys the project without waiting for logs
+          docker tag ravijar/petstore ghcr.io/your-username/petstore:latest
+          docker push ghcr.io/your-username/petstore:latest
+
+      # Step 6: Trigger Railway deployment (this will be handled by Railway after pushing the image)
+      - name: Trigger Railway Deployment
+        run: |
+          echo "Docker image is ready and pushed to the registry. Triggering Railway deployment..."
+          # No need to add railway commands here since Railway will handle the deployment separately.
