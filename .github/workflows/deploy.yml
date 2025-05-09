@@ -22,8 +22,8 @@ jobs:
       - name: Set up Google Cloud credentials
         run: |
           echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > service-account-file.json
-          # Ensure the file is available for the Docker build context
-          mv service-account-file.json $GITHUB_WORKSPACE/service-account-file.json  # This moves the file into the repo root
+          # The file is already in the correct location, so no need to move it
+          ls -l service-account-file.json  # Optional: List to confirm the file is created
 
       # Step 4: Build the Docker image
       - name: Build Docker image
