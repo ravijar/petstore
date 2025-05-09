@@ -37,8 +37,13 @@ jobs:
         run: |
           docker build --build-arg GOOGLE_APPLICATION_CREDENTIALS=service-account-file.json -t ravijar/petstore .
 
-      # Step 6: Deploy to Railway
+      # Step 6: Set the Railway API Key and login
+      - name: Set Railway API Key and Login
+        run: |
+          export RAILWAY_API_KEY=${{ secrets.RAILWAY_API_KEY }}
+          railway login  # This will use the RAILWAY_API_KEY environment variable
+
+      # Step 7: Deploy to Railway
       - name: Deploy to Railway
         run: |
-          railway login --api-key ${{ secrets.RAILWAY_API_KEY }}  # Use your Railway API Key stored as a secret
           railway up  # This command deploys your app to Railway
