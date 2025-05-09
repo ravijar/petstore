@@ -22,21 +22,23 @@ jobs:
       - name: Set up Google Cloud credentials
         run: |
           echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > service-account-file.json
-          # No need to move the file to a specific directory; it will be used directly in the Docker build process
+          # Ensure service-account-file.json is used in the Docker build
 
       # Step 4: Build the Docker image
       - name: Build Docker image
         run: |
           docker build --build-arg GOOGLE_APPLICATION_CREDENTIALS=service-account-file.json -t ravijar/petstore .
 
-      # Step 5: Push Docker image to a registry (Optional, for example using GitHub Container Registry)
+      # Step 5: Push Docker image to GitHub Container Registry (optional)
       - name: Push Docker image to GitHub Container Registry
         run: |
-          docker tag ravijar/petstore ghcr.io/your-username/petstore:latest
-          docker push ghcr.io/your-username/petstore:latest
+          docker tag ravijar/petstore ghcr.io/ravijar/petstore:latest
+          docker push ghcr.io/ravijar/petstore:latest
 
-      # Step 6: Trigger Railway deployment (this will be handled by Railway after pushing the image)
+      # Step 6: Trigger Railway Deployment (Optional, this assumes Railway handles the deploy automatically)
       - name: Trigger Railway Deployment
         run: |
           echo "Docker image is ready and pushed to the registry. Triggering Railway deployment..."
-          # No need to add railway commands here since Railway will handle the deployment separately.
+          # No need to add railway commands here since Railway will handle deployment.
+          # But, if you are using Railway CLI, this can be triggered by:
+          # railway deploy
