@@ -41,7 +41,7 @@ jobs:
       - name: Deploy to Railway
         run: |
           # Set the Railway API Key in the environment
-          echo "RAILWAY_API_KEY=${{ secrets.RAILWAY_API_KEY }}" >> $GITHUB_ENV
+          export RAILWAY_API_KEY=${{ secrets.RAILWAY_API_KEY }}
           
           # Deploy using the Railway CLI
           railway up --detach  # Deploys the project without waiting for logs
