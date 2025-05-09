@@ -22,14 +22,14 @@ jobs:
       - name: Set up Google Cloud credentials
         run: |
           echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > service-account-file.json
-          # Move the credentials file to the correct directory
-          mkdir -p /app
-          mv service-account-file.json /app/service-account-file.json
+          # Move the credentials file to a directory accessible within Docker container
+          mkdir -p $HOME/.gcp  # Create a directory in the home directory to store the file
+          mv service-account-file.json $HOME/.gcp/service-account-file.json
 
       # Step 4: Build the Docker image
       - name: Build Docker image
         run: |
-          docker build --build-arg GOOGLE_APPLICATION_CREDENTIALS=/app/service-account-file.json -t ravijar/petstore .
+          docker build --build-arg GOOGLE_APPLICATION_CREDENTIALS=$HOME/.gcp/service-account-file.json -t ravijar/petstore .
 
       # Step 5: Deploy to Railway
       - name: Deploy to Railway
