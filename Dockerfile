@@ -13,6 +13,9 @@ RUN mvn dependency:go-offline -B
 # Copy the entire project into the container
 COPY . .
 
+# Copy the service account file into the container (you can adjust the path as needed)
+COPY service-account-file.json /app/service-account-file.json
+
 # Build the project and create a JAR file
 RUN mvn clean package -DskipTests
 
@@ -24,6 +27,12 @@ WORKDIR /app
 
 # Copy the built JAR file from the build stage
 COPY --from=build /app/target/PetStore-0.0.1-SNAPSHOT.jar app.jar
+
+# Copy the service account file into the runtime container
+COPY --from=build /app/service-account-file.json /app/service-account-file.json
+
+# Set the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to the service account file
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/service-account-file.json
 
 # Expose the default Spring Boot port
 EXPOSE 8080
