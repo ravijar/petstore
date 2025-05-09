@@ -25,11 +25,11 @@ WORKDIR /app
 # Copy the built JAR file from the build stage
 COPY --from=build /app/target/PetStore-0.0.1-SNAPSHOT.jar app.jar
 
-# Copy the service account file into the runtime container (from the previous build step)
-COPY --from=build /app/.gcp/service-account-file.json /app/.gcp/service-account-file.json
+# Copy the service account file from the build context into the container
+COPY --from=build /app/service-account-file.json /app/service-account-file.json
 
 # Set the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to the service account file
-ENV GOOGLE_APPLICATION_CREDENTIALS=/app/.gcp/service-account-file.json
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/service-account-file.json
 
 # Expose the default Spring Boot port
 EXPOSE 8080
