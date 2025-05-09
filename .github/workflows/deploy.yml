@@ -23,6 +23,7 @@ jobs:
         run: |
           echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > service-account-file.json
           # Move the credentials file to the correct directory
+          mkdir -p /app
           mv service-account-file.json /app/service-account-file.json
 
       # Step 4: Build the Docker image
